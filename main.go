@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"text/template"
 
@@ -35,26 +34,22 @@ func main() {
 	var user_info Template_vars
 
 
-	user_info.Username = os.Getenv("NUSER")
-	user_info.Email = os.Getenv("NMAIL")
+	user_info.Username = os.Getenv("OIDC_USER")
+	user_info.Email = os.Getenv("OIDC_MAIL")
 
-	mykey, err := crypto.GenerateKey(user_info.Username,user_info.Email,"RSA",4096)
-	CE(err)
-	bla, err := mykey.GetArmoredPublicKeyWithCustomHeaders("","")
-	CE(err)
-	fmt.Println(bla)
-	bleh, err := mykey.ArmorWithCustomHeaders("","")
-	CE(err)
-	fmt.Println(bleh)
-
-	err = os.WriteFile("./publickey", []byte(bla), 0644)
+	// standard git requirement, no pass
+	gen_key, err := crypto.GenerateKey(user_info.Username,user_info.Email,"RSA",4096)
 	CE(err)
 
-	user_info.Fingerprint = mykey.GetFingerprint()
-	err = os.WriteFile("./fingerprint", []byte(user_info.Fingerprint), 0644)
+	// save pubkey in friendly copypastable format
+	pub_key, err := gen_key.GetArmoredPublicKeyWithCustomHeaders("","")
+	CE(err)
+	err = os.WriteFile("./publickey", []byte(pub_key), 0644)
+	CE(err)
+
+	user_info.Fingerprint = gen_key.GetFingerprint()
 	
-	
-	Parse_and_save("./gitignore.tmpl", "./gitconfig", &user_info)
+	Parse_and_save("./gitconfig.tmpl", "./.gitconfig", &user_info)
 	
 	
 }
