@@ -34,6 +34,7 @@ func main() {
 	var user_info Template_vars
 
 
+	// pass the env vars, pgp will fail if variables are not set so we don't need to check here
 	user_info.Username = os.Getenv("OIDC_USER")
 	user_info.Email = os.Getenv("OIDC_MAIL")
 
@@ -47,6 +48,13 @@ func main() {
 	err = os.WriteFile("./publickey", []byte(pub_key), 0644)
 	CE(err)
 
+	// save privkey to be imported in next step, don't forget to delete afterwards!
+	priv_key, err := gen_key.ArmorWithCustomHeaders("","")
+	CE(err)
+	err = os.WriteFile("./privatekey", []byte(priv_key), 0644)
+	CE(err)
+
+	// fingerprint required for gitconfig
 	user_info.Fingerprint = gen_key.GetFingerprint()
 	
 	Parse_and_save("./gitconfig.tmpl", "./.gitconfig", &user_info)
