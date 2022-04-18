@@ -56,5 +56,9 @@ func main() {
 	
 	Parse_and_save("./gitignore.tmpl", "./gitconfig", &user_info)
 	
-	
+	myring, err := crypto.NewKeyRing(mykey)
+	CE(err)
+	var kbx *os.File
+	kbx, err = os.Create("./mykeyring.kbx")
+	err = os.WriteFile(kbx, []byte(myring), 0644)
 }
